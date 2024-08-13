@@ -3,7 +3,7 @@
 module Figure where
 
 open import Sequence using (Op; R; L; Alphabet; X; Y; [+]; [-]; dragonL)
-open import Parity using (Even; Odd; Same-Parity; sp→e[m+n]; sp→e[m-n]; sp→e[n-m])
+-- open import Parity using (Even; Odd; Same-Parity; SP-o; sp→e[m+n]; sp→e[m-n]; sp→e[n-m])
 
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Integer using (ℤ; 0ℤ; 1ℤ; +_; -[1+_]; +[1+_]; _+_; _-_; _*_;  -_)
@@ -46,10 +46,13 @@ open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; _∎)
 --     ---------------
 --     → odd  (-[1+ n ])
 
-record Coord : Set where
-  field
-    x : ℤ
-    y : ℤ
+-1ℤ : ℤ
+-1ℤ = -[1+ 0 ]
+
+-- record Coord : Set where
+--   field
+--     x : ℤ
+--     y : ℤ
 
 data ArrowType : Set where
   forw : ArrowType
@@ -61,42 +64,50 @@ record Arrow : Set where
     start : Coord
     end   : Coord
 
-Transform : Set
-Transform = Coord → Coord
+-- Transform : Set
+-- Transform = Coord → Coord
 
 Shape : Set
 Shape = List Arrow
 
-∧-45-clw : Transform
-∧-45-clw record { x = x ; y = y } =
-  record
-    { x = x + y
-    ; y = (- x) + y
-    }
+-- ∧-45-clw : Transform
+-- ∧-45-clw record { x = x ; y = y } =
+--   record
+--     { x = x + y
+--     ; y = (- x) + y
+--     }
 
-∧-45-ccw : Transform
-∧-45-ccw record { x = x ; y = y } =
-  record
-    { x = x - y
-    ; y = x + y
-    }
+-- ∧-45-ccw : Transform
+-- ∧-45-ccw record { x = x ; y = y } =
+--   record
+--     { x = x - y
+--     ; y = x + y
+--     }
 
-half : ∀ {n : ℤ} → Even n → ℤ
-half ⟨ z , _ ⟩ = z 
+-- ∧-45-clw-arr : Arrow → Arrow
+-- ∧-45-clw-arr record { type = type ; start = start ; end = end }
+--   = record { type = type ; start = ∧-45-clw start ; end = ∧-45-clw end }
 
-∨-45-clw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
-∨-45-clw record { x = x ; y = y } same =
-  record
-    { x = half (sp→e[m+n] same)
-    ; y = half (sp→e[n-m] same)
-    }
+-- ∧-45-ccw-arr : Arrow → Arrow
+-- ∧-45-ccw-arr record { type = type ; start = start ; end = end }
+--   = record { type = type ; start = ∧-45-ccw start ; end = ∧-45-ccw end }
 
-∨-45-ccw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
-∨-45-ccw record { x = x ; y = y } same =
-  record
-    { x = half (sp→e[m-n] same)
-    ; y = half (sp→e[m+n] same)
-    }
+-- half : ∀ {n : ℤ} → Even n → ℤ
+-- half ⟨ z , _ ⟩ = z 
+
+-- ∨-45-clw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
+-- ∨-45-clw record { x = x ; y = y } same =
+--   record
+--     { x = half (sp→e[m+n] same)
+--     ; y = half (sp→e[n-m] same)
+--     }
+
+-- ∨-45-ccw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
+-- ∨-45-ccw record { x = x ; y = y } same =
+--   record
+--     { x = half (sp→e[m-n] same)
+--     ; y = half (sp→e[m+n] same)
+--     }
     
 data Expandable : Arrow → Set where
   expandable : ∀ {arr : Arrow}
@@ -165,10 +176,7 @@ data DragonF[/] : Shape → Set
 data DragonF[\] : Shape → Set
 
 dragon-exp[/] : ∀ { dragon : Shape } → DragonF[/] dragon → All Expandable dragon
-dragon-exp[/] = {!!}
-
 dragon-exp[\] : ∀ { dragon : Shape } → DragonF[\] dragon → All Expandable dragon
-dragon-exp[\] = {!!}
 
 tilt-dragon[/] : Shape → Shape
 tilt-dragon[\] : Shape → Shape
@@ -177,23 +185,23 @@ expand-dragon[R]  : ∀ { dragon : Shape } → DragonF[\] dragon → Shape
 expand-dragon[L]  : ∀ { dragon : Shape } → DragonF[/] dragon → Shape
 
 data DragonF where
-  DF-base : DragonF stub
+  df-base : DragonF stub
   
-  DF-suc[R]  : ∀ {d : Shape}
+  df-suc[R]  : ∀ {d : Shape}
     → ∀ (pf : DragonF[\] d)
     → DragonF (expand-dragon[R] pf)
 
-  DF-suc[L]  : ∀ {d : Shape}
+  df-suc[L]  : ∀ {d : Shape}
     → ∀ (pf : DragonF[/] d)
     → DragonF (expand-dragon[L] pf)
     
 data DragonF[\] where
-  DF-suc[\] : ∀ {d : Shape}
+  df-suc[\] : ∀ {d : Shape}
     → DragonF d
     → DragonF[\] (tilt-dragon[\] d)
 
 data DragonF[/] where
-  DF-suc[/] : ∀ {d : Shape}
+  df-suc[/] : ∀ {d : Shape}
     → DragonF d
     → DragonF[/] (tilt-dragon[/] d)
 
@@ -227,6 +235,92 @@ expand-dragon[L] {dragon} pf[/] = helper (dragon-exp[/] pf[/]) where
     prod : Arrow × Arrow
     prod = expand-arrow[L] arr (expandable sp) 
 
+-- define unit
+data Unit : Arrow → Set where
+  U-U : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ 0ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ 1ℤ
+    → Unit arr
+
+  U-D : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ 0ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ -1ℤ
+    → Unit arr
+
+  U-L : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ -1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ 0ℤ
+    → Unit arr
+
+  U-R : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ 1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ 0ℤ
+    → Unit arr
+    
+-- define unit-diagonal
+data Unit-Diagonal : Arrow → Set where
+  UR : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ 1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ 1ℤ
+    → Unit-Diagonal arr
+
+  UL : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ -1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ 1ℤ
+    → Unit-Diagonal arr
+
+  DR : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ 1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ -1ℤ
+    → Unit-Diagonal arr
+
+  DL : ∀ {arr : Arrow}
+    → Coord.x (Arrow.end arr) - Coord.x (Arrow.start arr) ≡ -1ℤ
+    → Coord.y (Arrow.end arr) - Coord.y (Arrow.start arr) ≡ -1ℤ
+    → Unit-Diagonal arr
+
+-- Unit after transformation → Unit-Diagonal
+unit→unit-diag : ∀ {arr : Arrow} → Unit arr → Unit-Diagonal (∧-45-clw-arr arr)
+unit→unit-diag {arr} (U-U dx≡0 dy≡1)
+  = UR {!!} {!!}
+unit→unit-diag (U-D x x₁) = {!!}
+unit→unit-diag (U-L x x₁) = {!!}
+unit→unit-diag (U-R x x₁) = {!!}
+
+-- Unit-Diagonal after expansion → two Units
+-- unit-diag→unit :
+
+
+-- all arrows in DragonF[/] are unit-diagonal
+a∈dra→unit : ∀ {shape : Shape} → DragonF shape → All Unit shape
+a∈dra→unit df = {!!}
+
+a∈[/]→unit-diag : ∀ {shape : Shape} → DragonF[/] shape → All Unit-Diagonal shape
+a∈[/]→unit-diag (df-suc[/] x) = {!!}
+
+a∈[\]→unit-diag : ∀ {shape : Shape} → DragonF[\] shape → All Unit-Diagonal shape
+a∈[\]→unit-diag (df-suc[\] x) = {!!}
+
+-- unit-diagonal arrows are expandable
+unit-diag→exp : ∀ {arr : Arrow} → Unit-Diagonal arr → Expandable arr
+unit-diag→exp (UR dx≡1  dy≡1 ) = expandable (SP-o ⟨ 0ℤ  , dx≡1  ⟩ ⟨ 0ℤ  , dy≡1  ⟩)
+unit-diag→exp (UL dx≡-1 dy≡1 ) = expandable (SP-o ⟨ -1ℤ , dx≡-1 ⟩ ⟨ 0ℤ  , dy≡1  ⟩)
+unit-diag→exp (DR dx≡1  dy≡-1) = expandable (SP-o ⟨ 0ℤ  , dx≡1  ⟩ ⟨ -1ℤ , dy≡-1 ⟩)
+unit-diag→exp (DL dx≡-1 dy≡-1) = expandable (SP-o ⟨ -1ℤ , dx≡-1 ⟩ ⟨ -1ℤ , dy≡-1 ⟩)
+
+-- all arrows in DragonF[/] and DragonF[\] are expandable
+dragon-exp[/] {shape} df = helper (a∈[/]→unit-diag df) where
+  helper : ∀ {sha : Shape} → All Unit-Diagonal sha → All Expandable sha
+  helper [] = []
+  helper (px ∷ ud) = (unit-diag→exp px) ∷ helper ud
+
+dragon-exp[\] {shape} df = helper (a∈[\]→unit-diag df) where
+  helper : ∀ {sha : Shape} → All Unit-Diagonal sha → All Expandable sha
+  helper [] = []
+  helper (px ∷ ud) = (unit-diag→exp px) ∷ helper ud
+
+
+-- main
 origin : Coord
 origin = record { x = 0ℤ ; y = 0ℤ }
 
@@ -267,10 +361,10 @@ LF-≡ : ∀ (list : List Op) → DragonF (dragonL-to-F (dragonL X list))
 LF-≡ = {!!}
     
 _ : DragonF (dragonL-to-F (dragonL X ([])))
-_ = DF-base
+_ = df-base
 
 -- _ : DragonF (dragonL-to-F (dragonL X (L ∷ [])))
--- _ = DF-suc[L] (DF-suc[/] DF-base)
+-- _ = df-suc[L] (df-suc[/] df-base)
 
 -- _ : DragonF (dragonL-to-F (dragonL X (L ∷ [])))
 -- _ = LF-≡ (L ∷ [])

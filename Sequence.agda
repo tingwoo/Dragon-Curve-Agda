@@ -52,7 +52,8 @@ dragonC (R ∷ ops) = (dragonC ops) ++ ([+] ∷ (invert (reverse (dragonC ops)))
 dragonC (L ∷ ops) = (dragonC ops) ++ ([-] ∷ (invert (reverse (dragonC ops))))
 
 LC-≡ : ∀ (ops : List Op) → strip (dragonL X ops) ≡ dragonC (reverse ops)
-LC-≡ = {!!}
+LC-≡ [] = refl
+LC-≡ (x ∷ ops) = {!   !}
 
 
 
