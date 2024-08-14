@@ -1,3 +1,5 @@
+module Geometry where
+
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Integer.Base using (ℤ; 0ℤ; 1ℤ; -1ℤ; +_; -[1+_]; +[1+_]; _+_; _-_; _*_; -_)
 open import Data.Integer.Properties using (+-comm; +-assoc; +-identityʳ; +-identityˡ; *-assoc; *-comm; *-identityˡ; *-zeroʳ; *-distribˡ-+; *-distribʳ-+; +-minus-telescope; *-cancelˡ-≡; neg-involutive; neg-distrib-+; -1*n≡-n; +-inverseʳ)
@@ -68,7 +70,7 @@ dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
     2ℤ * (c ² - 2ℤ * (c * a) + a ² + (d - b) ²)
   ≡⟨ cong (λ v → 2ℤ * (c ² - 2ℤ * (c * a) + a ² + v)) (a-b² d b) ⟩
     2ℤ * (c ² - 2ℤ * (c * a) + a ² + (d ² - 2ℤ * (d * b) + b ²)) --
-  ≡⟨ cong (2ℤ *_) (group (c ²) (- (2ℤ * (c * a))) (a ²) (d ²) (- (2ℤ * (d * b))) (b ²)) ⟩ 
+  ≡⟨ cong (2ℤ *_) (group3 (c ²) (- (2ℤ * (c * a))) (a ²) (d ²) (- (2ℤ * (d * b))) (b ²)) ⟩ 
     2ℤ * ((c ² + d ²) + (- (2ℤ * (c * a)) + - (2ℤ * (d * b))) + (a ² + b ²))
   ≡⟨ sym (cong (λ v → 2ℤ * ((c ² + d ²) + v + (a ² + b ²))) (neg-distrib-+ (2ℤ * (c * a)) (2ℤ * (d * b)))) ⟩ 
     2ℤ * ((c ² + d ²) - (2ℤ * (c * a) + 2ℤ * (d * b)) + (a ² + b ²))
@@ -86,7 +88,7 @@ dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
     2ℤ * (c ² + d ²) + ((- (2ℤ * ((c + d) * (a + b)))) + (- (2ℤ * ((- c + d) * (- a + b))))) + ((a + b) ² + (- a + b) ²)
   ≡⟨ sym (cong (λ v → v + ((- (2ℤ * ((c + d) * (a + b)))) + (- (2ℤ * ((- c + d) * (- a + b))))) + ((a + b) ² + (- a + b) ²)) ([a+b]²+[-a+b]²≡2[a²+b²] c d)) ⟩ 
     ((c + d) ² + (- c + d) ²) + ((- (2ℤ * ((c + d) * (a + b)))) + (- (2ℤ * ((- c + d) * (- a + b))))) + ((a + b) ² + (- a + b) ²)
-  ≡⟨ sym (group ((c + d) ²) (- (2ℤ * ((c + d) * (a + b)))) ((a + b) ²) ((- c + d) ²) (- (2ℤ * ((- c + d) * (- a + b)))) ((- a + b) ²)) ⟩ 
+  ≡⟨ sym (group3 ((c + d) ²) (- (2ℤ * ((c + d) * (a + b)))) ((a + b) ²) ((- c + d) ²) (- (2ℤ * ((- c + d) * (- a + b)))) ((- a + b) ²)) ⟩ 
      (c + d) ²   - 2ℤ * ((c + d)   * (a + b))   + (a + b) ² + 
     ((- c + d) ² - 2ℤ * ((- c + d) * (- a + b)) + (- a + b) ²) --
   ≡⟨ sym (cong (λ v → (c + d) ² - 2ℤ * ((c + d) * (a + b)) + (a + b) ² + v) (a-b² (- c + d) (- a + b))) ⟩
@@ -109,8 +111,8 @@ dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
     d : ℤ
     d = Coord.y p2
 
-    group : ∀ (a b c d e f : ℤ) → a + b + c + (d + e + f) ≡ (a + d) + (b + e) + (c + f)
-    group a b c d e f = 
+    group3 : ∀ (a b c d e f : ℤ) → a + b + c + (d + e + f) ≡ (a + d) + (b + e) + (c + f)
+    group3 a b c d e f = 
       begin
         a + b + c + (d + e + f)
       ≡⟨ cong (λ v → (a + b + c) + v) (+-assoc d e f) ⟩ 
@@ -151,7 +153,7 @@ dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
         (a ² + 2ℤ * (a * b) + b ²) + (a - b) ²
       ≡⟨ cong (λ v → (a ² + 2ℤ * (a * b) + b ²) + v) (a-b² a b) ⟩ 
         (a ² + 2ℤ * (a * b) + b ²) + (a ² - 2ℤ * (a * b) + b ²)
-      ≡⟨ group (a ²) (2ℤ * (a * b)) (b ²) (a ²) (- (2ℤ * (a * b))) (b ²) ⟩
+      ≡⟨ group3 (a ²) (2ℤ * (a * b)) (b ²) (a ²) (- (2ℤ * (a * b))) (b ²) ⟩
          (a ² + a ²) + (2ℤ * (a * b) + - (2ℤ * (a * b))) + (b ² + b ²)
       ≡⟨ cong (λ v → v + (2ℤ * (a * b) + - (2ℤ * (a * b))) + (b ² + b ²)) (n+n≡2n (a ²)) ⟩
         2ℤ * a ² + (2ℤ * (a * b) + - (2ℤ * (a * b))) + (b ² + b ²)

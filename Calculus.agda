@@ -1,3 +1,5 @@
+module Calculus where
+
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Integer.Base using (ℤ; 0ℤ; 1ℤ; -1ℤ; +_; -[1+_]; +[1+_]; _+_; _-_; _*_; -_)
 open import Data.Integer.Properties using (neg-involutive; +-assoc; *-comm; *-assoc; *-distribʳ-+; *-distribˡ-+; *-identityˡ; -1*n≡-n)
