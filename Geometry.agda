@@ -17,6 +17,11 @@ record Coord : Set where
   field
     x : ℤ
     y : ℤ
+  
+record Arrow : Set where
+  field
+    s : Coord
+    e : Coord
 
 half : ∀ {n : ℤ} → Even n → ℤ
 half ⟨ z , _ ⟩ = z
