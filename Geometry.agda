@@ -1,30 +1,36 @@
 module Geometry where
 
 open import Data.Nat using (ℕ; zero; suc)
+
 open import Data.Integer.Base using (ℤ; 0ℤ; 1ℤ; -1ℤ; +_; -[1+_]; +[1+_]; _+_; _-_; _*_; -_)
 open import Data.Integer.Properties using (+-comm; +-assoc; +-identityʳ; +-identityˡ; *-assoc; *-comm; *-identityˡ; *-zeroʳ; *-distribˡ-+; *-distribʳ-+; +-minus-telescope; *-cancelˡ-≡; neg-involutive; neg-distrib-+; -1*n≡-n; +-inverseʳ)
 
-open import Data.Product using (_×_; proj₁; proj₂) renaming (_,_ to ⟨_,_⟩)
+open import Data.Product using (_×_; proj₁; proj₂; Σ; ∃; Σ-syntax; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
+open import Data.Sum using (_⊎_; inj₁; inj₂) -- renaming ([_,_] to case-⊎)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; sym)
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; _∎)
 
-open import Parity using (Even; Odd; Same-Parity; SP-o; sp→e[m+n]; sp→e[m-n]; sp→e[n-m])
+open import Util using (case-⊎)
+open import Parity using (Even; Odd; Same-Parity; SP-e; SP-o; sp→e[m+n]; sp→e[m-n]; sp→e[n-m]; e≡-e; o≡-o; e+e≡e; e-e≡e; o+o≡e; o-o≡e; o+e≡o; e+o≡o; e-o≡o; o-e≡o; e⊎o)
 open import Calculus using (2ℤ; 4ℤ; -2ℤ; _²; m+n≡m--n; n+n≡2n; *-distribʳ--; *-distribˡ--; ^-distrib-*; -a²≡a²; -a*b≡-ab; -a*-b≡ab; [a+b][c+d]; [a-b][c-d]; a-b²; a+b²)
 
-record Coord : Set where
-  field
-    x : ℤ
-    y : ℤ
+record Coord : Set where field x y : ℤ
   
-record Arrow : Set where
-  field
-    s : Coord
-    e : Coord
+record Arrow : Set where field s e : Coord
 
 half : ∀ {n : ℤ} → Even n → ℤ
 half ⟨ z , _ ⟩ = z
+
+_+ᶜ_ : Coord → Coord → Coord
+record {x = x1 ; y = y1} +ᶜ record {x = x2 ; y = y2} = record {x = x1 + x2 ; y = y1 + y2}
+
+_-ᶜ_ : Coord → Coord → Coord
+record {x = x1 ; y = y1} -ᶜ record {x = x2 ; y = y2} = record {x = x1 - x2 ; y = y1 - y2}
+
+arrow-vec : Arrow → Coord
+arrow-vec record {s = s ; e = e} = e -ᶜ s
 
 45↑-clw : Coord → Coord
 45↑-clw record { x = x ; y = y } =
@@ -40,27 +46,126 @@ half ⟨ z , _ ⟩ = z
     ; y = x + y
     }
 
--- ∧-45-clw-arr : Arrow → Arrow
--- ∧-45-clw-arr record { type = type ; start = start ; end = end }
---   = record { type = type ; start = ∧-45-clw start ; end = ∧-45-clw end }
+45↑-clw-arr : Arrow → Arrow
+45↑-clw-arr record { s = s ; e = e } =
+  record { s = 45↑-clw s ; e = 45↑-clw e }
 
--- ∧-45-ccw-arr : Arrow → Arrow
--- ∧-45-ccw-arr record { type = type ; start = start ; end = end }
---   = record { type = type ; start = ∧-45-ccw start ; end = ∧-45-ccw end }
+45↑-ccw-arr : Arrow → Arrow
+45↑-ccw-arr record { s = s ; e = e } =
+  record { s = 45↑-ccw s ; e = 45↑-ccw e }
 
-45↓-clw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
+Same-Parity-Coord : Coord → Set
+Same-Parity-Coord record {x = x ; y = y} = Same-Parity x y
+
+-- 45↑-clw-parity : ∀ (x y : ℤ) → Same-Parity-Coord (record {x = (x + y) ; y = ((- x) + y)})
+-- 45↑-clw-parity x y = 
+--   case-⊎
+--     (λ ex → case-⊎ 
+--       (λ ey → SP-e (e+e≡e ex ey) (e+e≡e (e≡-e ex) ey)) 
+--       (λ oy → SP-o (e+o≡o ex oy) (e+o≡o (e≡-e ex) oy)) 
+--       (e⊎o y)
+--     )
+--     (λ ox → case-⊎ 
+--       (λ ey → SP-o (o+e≡o ox ey) (o+e≡o (o≡-o ox) ey)) 
+--       (λ oy → SP-e (o+o≡e ox oy) (o+o≡e (o≡-o ox) oy)) 
+--       (e⊎o y)
+--     )
+--     (e⊎o x)
+
+-- 45↑-ccw-parity : ∀ (x y : ℤ) → Same-Parity-Coord (record {x = (x - y) ; y = (x + y)})
+-- 45↑-ccw-parity x y = 
+--   case-⊎
+--     (λ ex → case-⊎ 
+--       (λ ey → SP-e (e+e≡e ex (e≡-e ey)) (e+e≡e ex ey)) 
+--       (λ oy → SP-o (e+o≡o ex (o≡-o oy)) (e+o≡o ex oy)) 
+--       (e⊎o y)
+--     )
+--     (λ ox → case-⊎ 
+--       (λ ey → SP-o (o+e≡o ox (e≡-e ey)) (o+e≡o ox ey)) 
+--       (λ oy → SP-e (o+o≡e ox (o≡-o oy)) (o+o≡e ox oy)) 
+--       (e⊎o y)
+--     )
+--     (e⊎o x)
+
+45↑-clw-parity : ∀ (p : Coord) → Same-Parity-Coord (45↑-clw p)
+45↑-clw-parity p = 
+  case-⊎
+    (λ ex → case-⊎ 
+      (λ ey → SP-e (e+e≡e ex ey) (e+e≡e (e≡-e ex) ey)) 
+      (λ oy → SP-o (e+o≡o ex oy) (e+o≡o (e≡-e ex) oy)) 
+      (e⊎o (Coord.y p))
+    )
+    (λ ox → case-⊎ 
+      (λ ey → SP-o (o+e≡o ox ey) (o+e≡o (o≡-o ox) ey)) 
+      (λ oy → SP-e (o+o≡e ox oy) (o+o≡e (o≡-o ox) oy)) 
+      (e⊎o (Coord.y p))
+    )
+    (e⊎o (Coord.x p))
+
+45↑-ccw-parity : ∀ (p : Coord) → Same-Parity-Coord (45↑-ccw p)
+45↑-ccw-parity p = 
+  case-⊎
+    (λ ex → case-⊎ 
+      (λ ey → SP-e (e+e≡e ex (e≡-e ey)) (e+e≡e ex ey)) 
+      (λ oy → SP-o (e+o≡o ex (o≡-o oy)) (e+o≡o ex oy)) 
+      (e⊎o (Coord.y p))
+    )
+    (λ ox → case-⊎ 
+      (λ ey → SP-o (o+e≡o ox (e≡-e ey)) (o+e≡o ox ey)) 
+      (λ oy → SP-e (o+o≡e ox (o≡-o oy)) (o+o≡e ox oy)) 
+      (e⊎o (Coord.y p))
+    )
+    (e⊎o (Coord.x p))
+
+same-parity-preserve : ∀ {p1 p2 : Coord}
+  → Same-Parity-Coord p1 
+  → Same-Parity-Coord p2 
+  → Same-Parity-Coord (p2 -ᶜ p1)
+
+same-parity-preserve (SP-e ex1 ey1) (SP-e ex2 ey2) = SP-e (e-e≡e ex2 ex1) (e-e≡e ey2 ey1)
+same-parity-preserve (SP-e ex1 ey1) (SP-o ox2 oy2) = SP-o (o-e≡o ox2 ex1) (o-e≡o oy2 ey1)
+same-parity-preserve (SP-o ox1 oy1) (SP-e ex2 ey2) = SP-o (e-o≡o ex2 ox1) (e-o≡o ey2 oy1)
+same-parity-preserve (SP-o ox1 oy1) (SP-o ox2 oy2) = SP-e (o-o≡e ox2 ox1) (o-o≡e oy2 oy1)
+
+45↑-clw-arr-parity : ∀ (arr : Arrow) 
+  → Same-Parity-Coord (arrow-vec (45↑-clw-arr arr))
+45↑-clw-arr-parity arr = 
+  same-parity-preserve 
+  (45↑-clw-parity (Arrow.s arr)) 
+  (45↑-clw-parity (Arrow.e arr)) 
+
+45↑-ccw-arr-parity : ∀ (arr : Arrow) 
+  → Same-Parity-Coord (arrow-vec (45↑-ccw-arr arr))
+45↑-ccw-arr-parity arr = 
+  same-parity-preserve 
+  (45↑-ccw-parity (Arrow.s arr)) 
+  (45↑-ccw-parity (Arrow.e arr)) 
+
+45↓-clw : ∀ ((record {x = x ; y = y}) : Coord) → Same-Parity x y → Coord
 45↓-clw record { x = x ; y = y } same =
   record
     { x = half (sp→e[m+n] same)
     ; y = half (sp→e[n-m] same)
     }
 
-45↓-ccw : ∀ ( ( record { x = x ; y = y } ) : Coord ) → Same-Parity x y → Coord
+45↓-ccw : ∀ ((record {x = x ; y = y}) : Coord) → Same-Parity x y → Coord
 45↓-ccw record { x = x ; y = y } same =
   record
     { x = half (sp→e[m-n] same)
     ; y = half (sp→e[m+n] same)
     }
+
+45↓-clw-arr : ∀ ((record { s = p1 ; e = p2 }) : Arrow) 
+  → Same-Parity-Coord p1
+  → Same-Parity-Coord p2
+  → Arrow
+45↓-clw-arr (record { s = s ; e = e }) pf1 pf2 = record {s = 45↓-clw s pf1 ; e = 45↓-clw e pf2 }
+
+45↓-ccw-arr : ∀ ((record { s = p1 ; e = p2 }) : Arrow) 
+  → Same-Parity-Coord p1
+  → Same-Parity-Coord p2
+  → Arrow
+45↓-ccw-arr (record { s = s ; e = e }) pf1 pf2 = record {s = 45↓-ccw s pf1 ; e = 45↓-ccw e pf2 }
 
 dist2 : Coord → Coord → ℤ
 dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
@@ -354,3 +459,4 @@ dist2 p1 p2 = (Coord.x p2 - Coord.x p1) ² + (Coord.y p2 - Coord.y p1) ²
     ≡⟨ sym (*-distribˡ-+ (n ²) ((x2 - x1) ²) ((y2 - y1) ²)) ⟩
       n ² * ((x2 - x1) ² + (y2 - y1) ²)
     ∎
+  

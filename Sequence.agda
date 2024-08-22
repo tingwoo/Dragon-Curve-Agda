@@ -47,13 +47,13 @@ invert ([+] ∷ xs) = [-] ∷ (invert xs)
 invert ([-] ∷ xs) = [+] ∷ (invert xs)
 invert (a ∷ xs) = a ∷ (invert xs)
 
-dragonL : Alphabet → List Op → List Alphabet
-dragonL a [] = a ∷ []
-dragonL a (op ∷ ops) = L-help op (dragonL a ops)
+dragonL : List Alphabet → List Op → List Alphabet
+dragonL seed [] = seed
+dragonL seed (op ∷ ops) = L-help op (dragonL seed ops)
 
 dragonC : List Op → List Alphabet
 dragonC [] = []
-dragonC (op ∷ ops) = (dragonC ops) ++ ((choose op) ∷ (invert (reverse (dragonC ops))))
+dragonC (op ∷ ops) = dragonC ops ++ choose op ∷ invert (reverse (dragonC ops))
 
 L-help-distrib : 
     ∀ (op : Op) 
@@ -103,28 +103,28 @@ inv-involutive ([-] ∷ xs) = cong ([-] ∷_) (inv-involutive xs)
 dragonL-X-compose : 
     ∀ (fst : Op) 
   → ∀ (ops : List Op)
-  → dragonL X (ops ∷ʳ fst) ≡ (dragonL X ops) ++ ((choose fst) ∷ (dragonL Y ops))
+  → dragonL (X ∷ []) (ops ∷ʳ fst) ≡ (dragonL (X ∷ []) ops) ++ ((choose fst) ∷ (dragonL (Y ∷ []) ops))
 
 dragonL-X-compose R [] = refl
 dragonL-X-compose L [] = refl
 dragonL-X-compose fst (op ∷ ops) =
   begin
-    dragonL X ((op ∷ ops) ∷ʳ fst)
+    dragonL (X ∷ []) ((op ∷ ops) ∷ʳ fst)
   ≡⟨⟩
-    L-help op (dragonL X (ops ∷ʳ fst))
+    L-help op (dragonL (X ∷ []) (ops ∷ʳ fst))
   ≡⟨ cong (L-help op) (dragonL-X-compose fst ops) ⟩
-    L-help op ((dragonL X ops) ++ ((choose fst) ∷ (dragonL Y ops)))
-  ≡⟨ L-help-distrib op (dragonL X ops) ((choose fst) ∷ (dragonL Y ops)) ⟩
-    (L-help op (dragonL X ops)) ++ (L-help op ((choose fst) ∷ (dragonL Y ops)))
+    L-help op ((dragonL (X ∷ []) ops) ++ ((choose fst) ∷ (dragonL (Y ∷ []) ops)))
+  ≡⟨ L-help-distrib op (dragonL (X ∷ []) ops) ((choose fst) ∷ (dragonL (Y ∷ []) ops)) ⟩
+    (L-help op (dragonL (X ∷ []) ops)) ++ (L-help op ((choose fst) ∷ (dragonL (Y ∷ []) ops)))
   ≡⟨⟩
-    (dragonL X (op ∷ ops)) ++ (L-help op ((choose fst) ∷ (dragonL Y ops)))
-  ≡⟨ cong (λ v → (dragonL X (op ∷ ops)) ++ v) (help op fst ops) ⟩
-    (dragonL X (op ∷ ops)) ++ ((choose fst) ∷ L-help op (dragonL Y ops))
+    (dragonL (X ∷ []) (op ∷ ops)) ++ (L-help op ((choose fst) ∷ (dragonL (Y ∷ []) ops)))
+  ≡⟨ cong (λ v → (dragonL (X ∷ []) (op ∷ ops)) ++ v) (help op fst ops) ⟩
+    (dragonL (X ∷ []) (op ∷ ops)) ++ ((choose fst) ∷ L-help op (dragonL (Y ∷ []) ops))
   ≡⟨⟩
-    (dragonL X (op ∷ ops)) ++ ((choose fst) ∷ (dragonL Y (op ∷ ops)))
+    (dragonL (X ∷ []) (op ∷ ops)) ++ ((choose fst) ∷ (dragonL (Y ∷ []) (op ∷ ops)))
   ∎ 
   where
-    help : ∀ (op fst : Op) → ∀ (ops : List Op) → L-help op ((choose fst) ∷ (dragonL Y ops)) ≡ (choose fst) ∷ L-help op (dragonL Y ops)
+    help : ∀ (op fst : Op) → ∀ (ops : List Op) → L-help op ((choose fst) ∷ (dragonL (Y ∷ []) ops)) ≡ (choose fst) ∷ L-help op (dragonL (Y ∷ []) ops)
     help R R ops = refl
     help R L ops = refl
     help L R ops = refl
@@ -133,51 +133,51 @@ dragonL-X-compose fst (op ∷ ops) =
 dragonL-Y-compose : 
     ∀ (fst : Op) 
   → ∀ (ops : List Op)
-  → dragonL Y (ops ∷ʳ fst) ≡ (dragonL X ops) ++ ((chooseY fst) ∷ (dragonL Y ops))
+  → dragonL (Y ∷ []) (ops ∷ʳ fst) ≡ (dragonL (X ∷ []) ops) ++ ((chooseY fst) ∷ (dragonL (Y ∷ []) ops))
 
 dragonL-Y-compose R [] = refl
 dragonL-Y-compose L [] = refl
 dragonL-Y-compose fst (op ∷ ops) = 
   begin
-    dragonL Y ((op ∷ ops) ∷ʳ fst)
+    dragonL (Y ∷ []) ((op ∷ ops) ∷ʳ fst)
   ≡⟨⟩
-    L-help op (dragonL Y (ops ∷ʳ fst))
+    L-help op (dragonL (Y ∷ []) (ops ∷ʳ fst))
   ≡⟨ cong (L-help op) (dragonL-Y-compose fst ops) ⟩
-    L-help op ((dragonL X ops) ++ ((chooseY fst) ∷ (dragonL Y ops)))
-  ≡⟨ L-help-distrib op (dragonL X ops) ((chooseY fst) ∷ (dragonL Y ops)) ⟩
-    (L-help op (dragonL X ops)) ++ (L-help op ((chooseY fst) ∷ (dragonL Y ops)))
+    L-help op ((dragonL (X ∷ []) ops) ++ ((chooseY fst) ∷ (dragonL (Y ∷ []) ops)))
+  ≡⟨ L-help-distrib op (dragonL (X ∷ []) ops) ((chooseY fst) ∷ (dragonL (Y ∷ []) ops)) ⟩
+    (L-help op (dragonL (X ∷ []) ops)) ++ (L-help op ((chooseY fst) ∷ (dragonL (Y ∷ []) ops)))
   ≡⟨⟩
-    (dragonL X (op ∷ ops)) ++ (L-help op ((chooseY fst) ∷ (dragonL Y ops)))
-  ≡⟨ cong (λ v → (dragonL X (op ∷ ops)) ++ v) (help op fst ops) ⟩
-    (dragonL X (op ∷ ops)) ++ ((chooseY fst) ∷ L-help op (dragonL Y ops))
+    (dragonL (X ∷ []) (op ∷ ops)) ++ (L-help op ((chooseY fst) ∷ (dragonL (Y ∷ []) ops)))
+  ≡⟨ cong (λ v → (dragonL (X ∷ []) (op ∷ ops)) ++ v) (help op fst ops) ⟩
+    (dragonL (X ∷ []) (op ∷ ops)) ++ ((chooseY fst) ∷ L-help op (dragonL (Y ∷ []) ops))
   ≡⟨⟩
-    (dragonL X (op ∷ ops)) ++ ((chooseY fst) ∷ (dragonL Y (op ∷ ops)))
+    (dragonL (X ∷ []) (op ∷ ops)) ++ ((chooseY fst) ∷ (dragonL (Y ∷ []) (op ∷ ops)))
   ∎ 
   where
-    help : ∀ (op fst : Op) → ∀ (ops : List Op) → L-help op ((chooseY fst) ∷ (dragonL Y ops)) ≡ (chooseY fst) ∷ L-help op (dragonL Y ops)
+    help : ∀ (op fst : Op) → ∀ (ops : List Op) → L-help op ((chooseY fst) ∷ (dragonL (Y ∷ []) ops)) ≡ (chooseY fst) ∷ L-help op (dragonL (Y ∷ []) ops)
     help R R ops = refl
     help R L ops = refl
     help L R ops = refl
     help L L ops = refl
   
 
-LC[X]-≡ : ∀ (ops : List Op) → strip (dragonL X (reverse ops)) ≡ dragonC ops
-LC[Y]-≡ : ∀ (ops : List Op) → strip (dragonL Y (reverse ops)) ≡ invert (reverse (dragonC ops))
+LC[X]-≡ : ∀ (ops : List Op) → strip (dragonL (X ∷ []) (reverse ops)) ≡ dragonC ops
+LC[Y]-≡ : ∀ (ops : List Op) → strip (dragonL (Y ∷ []) (reverse ops)) ≡ invert (reverse (dragonC ops))
 
 LC[X]-≡ [] = refl
 LC[X]-≡ (x ∷ ops) = 
   begin
-    strip (dragonL X (reverse (x ∷ ops)))
-  ≡⟨ cong (λ v → strip (dragonL X v)) (unfold-reverse x ops) ⟩ 
-    strip (dragonL X ((reverse ops) ∷ʳ x))
+    strip (dragonL (X ∷ []) (reverse (x ∷ ops)))
+  ≡⟨ cong (λ v → strip (dragonL (X ∷ []) v)) (unfold-reverse x ops) ⟩ 
+    strip (dragonL (X ∷ []) ((reverse ops) ∷ʳ x))
   ≡⟨ cong strip (dragonL-X-compose x (reverse ops)) ⟩
-    strip ( (dragonL X (reverse ops)) ++ ((choose x) ∷ (dragonL Y (reverse ops)))  )
-  ≡⟨ strip-distrib (dragonL X (reverse ops)) ((choose x) ∷ (dragonL Y (reverse ops))) ⟩ 
-    strip (dragonL X (reverse ops)) ++ strip ((choose x) ∷ (dragonL Y (reverse ops)))
-  ≡⟨ cong (λ v → strip (dragonL X (reverse ops)) ++ v) (help x (dragonL Y (reverse ops))) ⟩ 
-    strip (dragonL X (reverse ops)) ++ ((choose x) ∷ strip (dragonL Y (reverse ops)))
-  ≡⟨ cong (λ v → v ++ ((choose x) ∷ strip (dragonL Y (reverse ops)))) (LC[X]-≡ ops) ⟩ 
-    (dragonC ops) ++ ((choose x) ∷ strip (dragonL Y (reverse ops)))
+    strip ( (dragonL (X ∷ []) (reverse ops)) ++ ((choose x) ∷ (dragonL (Y ∷ []) (reverse ops)))  )
+  ≡⟨ strip-distrib (dragonL (X ∷ []) (reverse ops)) ((choose x) ∷ (dragonL (Y ∷ []) (reverse ops))) ⟩ 
+    strip (dragonL (X ∷ []) (reverse ops)) ++ strip ((choose x) ∷ (dragonL (Y ∷ []) (reverse ops)))
+  ≡⟨ cong (λ v → strip (dragonL (X ∷ []) (reverse ops)) ++ v) (help x (dragonL (Y ∷ []) (reverse ops))) ⟩ 
+    strip (dragonL (X ∷ []) (reverse ops)) ++ ((choose x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))
+  ≡⟨ cong (λ v → v ++ ((choose x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))) (LC[X]-≡ ops) ⟩ 
+    (dragonC ops) ++ ((choose x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))
   ≡⟨ cong (λ v → (dragonC ops) ++ ((choose x) ∷ v)) (LC[Y]-≡ ops) ⟩ 
     (dragonC ops) ++ ((choose x) ∷ (invert (reverse (dragonC ops))))
   ≡⟨⟩ 
@@ -191,21 +191,21 @@ LC[X]-≡ (x ∷ ops) =
 LC[Y]-≡ [] = refl
 LC[Y]-≡ (x ∷ ops) = 
   begin
-    strip (dragonL Y (reverse (x ∷ ops)))
-  ≡⟨ cong (λ v → strip (dragonL Y v)) (unfold-reverse x ops) ⟩
-    strip (dragonL Y ((reverse ops) ∷ʳ x))
+    strip (dragonL (Y ∷ []) (reverse (x ∷ ops)))
+  ≡⟨ cong (λ v → strip (dragonL (Y ∷ []) v)) (unfold-reverse x ops) ⟩
+    strip (dragonL (Y ∷ []) ((reverse ops) ∷ʳ x))
   ≡⟨ cong strip (dragonL-Y-compose x (reverse ops)) ⟩
-    strip ( (dragonL X (reverse ops)) ++ ((chooseY x) ∷ (dragonL Y (reverse ops)))  )
-  ≡⟨ strip-distrib (dragonL X (reverse ops)) ((chooseY x) ∷ (dragonL Y (reverse ops))) ⟩
-    strip (dragonL X (reverse ops)) ++ strip ((chooseY x) ∷ (dragonL Y (reverse ops)))
-  ≡⟨ cong (λ v → strip (dragonL X (reverse ops)) ++ v) (help x (dragonL Y (reverse ops))) ⟩
-    strip (dragonL X (reverse ops)) ++ ((chooseY x) ∷ strip (dragonL Y (reverse ops)))
-  ≡⟨ cong (λ v → v ++ ((chooseY x) ∷ strip (dragonL Y (reverse ops)))) (LC[X]-≡ ops) ⟩
-    (dragonC ops) ++ ((chooseY x) ∷ strip (dragonL Y (reverse ops)))
-  ≡⟨ ∷-assoc (dragonC ops) (strip (dragonL Y (reverse ops))) (chooseY x) ⟩
-    ((dragonC ops) ∷ʳ (chooseY x)) ++ strip (dragonL Y (reverse ops))
-  ≡⟨ sym (cong (λ v → (v ∷ʳ (chooseY x)) ++ strip (dragonL Y (reverse ops))) (help5 (dragonC ops))) ⟩
-    (invert (reverse (invert (reverse (dragonC ops)))) ∷ʳ (chooseY x)) ++ strip (dragonL Y (reverse ops))
+    strip ( (dragonL (X ∷ []) (reverse ops)) ++ ((chooseY x) ∷ (dragonL (Y ∷ []) (reverse ops)))  )
+  ≡⟨ strip-distrib (dragonL (X ∷ []) (reverse ops)) ((chooseY x) ∷ (dragonL (Y ∷ []) (reverse ops))) ⟩
+    strip (dragonL (X ∷ []) (reverse ops)) ++ strip ((chooseY x) ∷ (dragonL (Y ∷ []) (reverse ops)))
+  ≡⟨ cong (λ v → strip (dragonL (X ∷ []) (reverse ops)) ++ v) (help x (dragonL (Y ∷ []) (reverse ops))) ⟩
+    strip (dragonL (X ∷ []) (reverse ops)) ++ ((chooseY x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))
+  ≡⟨ cong (λ v → v ++ ((chooseY x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))) (LC[X]-≡ ops) ⟩
+    (dragonC ops) ++ ((chooseY x) ∷ strip (dragonL (Y ∷ []) (reverse ops)))
+  ≡⟨ ∷-assoc (dragonC ops) (strip (dragonL (Y ∷ []) (reverse ops))) (chooseY x) ⟩
+    ((dragonC ops) ∷ʳ (chooseY x)) ++ strip (dragonL (Y ∷ []) (reverse ops))
+  ≡⟨ sym (cong (λ v → (v ∷ʳ (chooseY x)) ++ strip (dragonL (Y ∷ []) (reverse ops))) (help5 (dragonC ops))) ⟩
+    (invert (reverse (invert (reverse (dragonC ops)))) ∷ʳ (chooseY x)) ++ strip (dragonL (Y ∷ []) (reverse ops))
   ≡⟨ cong (λ v → (invert (reverse (invert (reverse (dragonC ops)))) ∷ʳ (chooseY x)) ++ v) (LC[Y]-≡ ops) ⟩
     invert (reverse (invert (reverse (dragonC ops)))) ∷ʳ (chooseY x) ++ invert (reverse (dragonC ops))
   ≡⟨ sym (cong (λ v → v ++ invert (reverse (dragonC ops))) (help2 (reverse (invert (reverse (dragonC ops)))) x)) ⟩
@@ -270,6 +270,6 @@ LC[Y]-≡ (x ∷ ops) =
 tmpList : List Op
 tmpList = R ∷ R ∷ R ∷ L ∷ R ∷ L ∷ R ∷ R ∷ []
  
-testEquiv : strip (dragonL X (reverse tmpList)) ≡ dragonC tmpList
+testEquiv : strip (dragonL (X ∷ []) (reverse tmpList)) ≡ dragonC tmpList
 testEquiv = refl
   
